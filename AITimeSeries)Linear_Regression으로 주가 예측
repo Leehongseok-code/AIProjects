@@ -27,25 +27,52 @@ sequent_length=7
 train_size=int(len(mid)*0.8)
 mid=minmax(mid)
 
-for i in range(0,train_size-7):
-    datax = []
-    for j in range(7):
-        datax.append(mid[i+j])
-    x_train.append(datax)
-    y_train.append([mid[i+7]])
+def data_set(dataset1,dataset2,train_size):
+    for i in range(0,train_size-7):
+        datax = []
+        for j in range(7):
+            datax.append(mid[i+j])
+        dataset1.append(datax)
+        dataset2.append([mid[i+7]])
+data_set(x_train,y_train,train_size)
 
-x_train = torch.FloatTensor(x_train)
-y_train=torch.FloatTensor(y_train)
-print(y_train)
+def build_dataset(time_series,seq_length):#(train_data,7)
+    datax=[]
+    datay=[]
+    for i in range(0,len(time_series)-seq_length):
+        #print(time_series.shape)
+        tempx=[]
+        for j in range(i,i+seq_length):
+            tempx.append(time_series[j])
+        _x=tempx
+        #print(_x)
+        #_x=time_series[i:i+seq_length,:]
+        _y=time_series[i+seq_length]#다음 날 주가
+        #print(_x,"->",_y)
+        #print(i)
+        datax.append(_x)
+        datay.append(_y)
+    return np.array(datax),np.array(datay)
 
+x_train_tensor = torch.FloatTensor(x_train)
+y_train_tensor=torch.FloatTensor(y_train)
+#print(y_train)
+
+test_data=mid[train_size-sequent_length:]
+
+'''''
 for i in range(train_size,len(mid)-sequent_length):
     datax = []
     for j in range(7):
         datax.append(mid[i+j])
     x_test.append(datax)
     y_test.append([mid[i+7]])
-x_test=torch.FloatTensor(x_test)
-y_test=torch.FloatTensor(y_test)
+'''''
+print(test_data[0])
+
+x_test,y_test=build_dataset(test_data,7)
+x_test_tensor=torch.FloatTensor(x_test)
+y_test_tensor=torch.FloatTensor(y_test)
 
 
 
@@ -60,16 +87,32 @@ model=LinearModel()
 optimizer=torch.optim.SGD(model.parameters(),lr=1e-5)
 epoch_number=500000
 for epoch in range(epoch_number):
-    prediction=model(x_train)
-    cost=F.mse_loss(prediction,y_train)
+    prediction=model(x_train_tensor)
+    cost=F.mse_loss(prediction,y_train_tensor)
     optimizer.zero_grad()
     cost.backward()
     optimizer.step()
 
     if epoch%100==0:
         print('Epoch {:4d}/{} Cost: {:.6f}'.format(epoch,epoch_number,cost.item()))
+
+#
+test_data=list(test_data)
+print(test_data)
+
+#향후 30
+for i in range(30):
+    test_data.append(float(model(x_test_tensor)[len(model(x_test_tensor))-1]))
+
+x_test,y_temp=build_dataset(test_data,7)
+
+x_test_tensor = torch.FloatTensor(x_test)
+#y_test_tensor = torch.FloatTensor(y_test)
+
+#
+#print(x_test_tensor)
 plt.plot(y_test)
-print(model(x_test).data.numpy())
-plt.plot(model(x_test).data.numpy())
+#print(model(x_test_tensor).data.numpy())
+plt.plot(model(x_test_tensor).data.numpy())
 plt.legend(['original','prediction'])
 plt.show()

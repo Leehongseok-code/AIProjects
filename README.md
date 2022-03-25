@@ -2,4 +2,4 @@
 AI application using pytorch
 
 # References
-language distinction algorithm:
+logistic regression:https://wikidocs.net/22881

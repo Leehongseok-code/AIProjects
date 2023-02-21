@@ -2,7 +2,7 @@
 import requests
 from flask import Flask,request,jsonify
 import re
-google_api_key="AIzaSyBHdscrgCv920Tx5-TfqHoqn_cp4lRD0IQ"
+google_api_key=""
 #video_id=input("비디오 아이디를 입력하세요:")
 
 app=Flask(__name__)
